@@ -1,0 +1,94 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="fort-resource-retriever" attributes="url data no-cache">
+  <script>
+    (function ()
+    {
+      var resourceCache = {};
+      Polymer(
+        {
+          is:         'fort-resource-retriever',
+          properties: {
+            noCache: {type: Boolean, value: false},
+            url:     {type: String, observer: '_updateResource'},
+            data:    {type: String, notify: true}
+          },
+          attached:   function ()
+                      {
+                        document.addEventListener(this._NOTIFY_EVENT_NAME, this._resourceUpdated.bind(this));
+                      },
+
+          _resourceUpdated: function (e)
+                            {
+                              if(e.detail.url == this.url)
+                              {
+                                if(this.noCache)
+                                {
+                                  this.data = e.detail.data;
+                                }
+                                else
+                                {
+                                  resourceCache[this.url] = e.detail.data;
+                                  this.data = resourceCache[this.url];
+                                }
+                              }
+                            },
+
+          _updateResource: function ()
+                           {
+                             if(this.url)
+                             {
+                               if(this.noCache)
+                               {
+                                 this._triggerRequest();
+                               }
+                               else if(resourceCache[this.url])
+                               {
+                                 this.data = resourceCache[this.url];
+                               }
+                               else
+                               {
+                                 resourceCache[this.url] = {};
+                                 this._triggerRequest();
+                               }
+                             }
+                             else
+                             {
+                               this.data = null;
+                             }
+                           },
+
+          _triggerRequest: function ()
+                           {
+                             var self = this, oReq = new XMLHttpRequest();
+                             oReq.addEventListener(
+                               "load", function ()
+                               {
+                                 if(this.status == '200')
+                                 {
+                                   var data = null;
+                                   switch(this.getResponseHeader('content-type'))
+                                   {
+                                     case 'application/json':
+                                       data = JSON.parse(this.responseText);
+                                       break;
+                                     default:
+                                       data = this.responseText;
+                                       break;
+                                   }
+                                   document.dispatchEvent(
+                                     new CustomEvent(self._NOTIFY_EVENT_NAME, {detail: {url: self.url, data: data}})
+                                   );
+                                 }
+                               }
+                             );
+                             oReq.open('GET', this.url);
+                             oReq.send();
+                           },
+
+          _NOTIFY_EVENT_NAME: 'fortifi-resource-updated'
+        }
+      );
+    }());
+  </script>
+</dom-module>
