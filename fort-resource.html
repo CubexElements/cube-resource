@@ -1,13 +1,13 @@
 <link rel="import" href="../polymer/polymer.html">
 
-<dom-module id="fort-resource-retriever" attributes="url data no-cache">
+<dom-module id="fort-resource" attributes="url data no-cache">
   <script>
     (function ()
     {
       var resourceCache = {};
       Polymer(
         {
-          is:         'fort-resource-retriever',
+          is:         'fort-resource',
           properties: {
             noCache: {type: Boolean, value: false},
             url:     {type: String, observer: '_updateResource'},
