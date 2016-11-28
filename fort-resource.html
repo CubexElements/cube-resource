@@ -1,6 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 
-<dom-module id="fort-resource" attributes="url data headers no-cache">
+<dom-module id="fort-resource" attributes="auto auth url data headers no-cache">
   <script>
     (function ()
     {
@@ -9,12 +9,14 @@
         {
           is:         'fort-resource',
           properties: {
+            auto:    {type: Boolean, value: false},
+            auth:    {type: Boolean, value: false},
             noCache: {type: Boolean, value: false},
             url:     {type: String},
             headers: {type: Object},
             data:    {type: String, notify: true}
           },
-          observers:  ['_updateResource(url,headers)'],
+          observers:  ['_updateResource(auto,url,headers)'],
           attached:   function ()
                       {
                         document.addEventListener(this._NOTIFY_EVENT_NAME, this._resourceUpdated.bind(this));
@@ -36,10 +38,15 @@
                               }
                             },
 
-          _updateResource: function ()
+          update:          function ()
                            {
-                             if(this.url !== undefined && this.headers !== undefined)
+                             this._updateResource(true);
+                           },
+          _updateResource: function (request)
+                           {
+                             if(request && this.url !== undefined && this.headers !== undefined)
                              {
+                               console.log(request, this.url, this.headers);
                                if(this.noCache)
                                {
                                  this._triggerRequest();
@@ -96,7 +103,7 @@
                                  }
                                }
                              }
-                             oReq.withCredentials = true;
+                             oReq.withCredentials = Boolean(this.auth);
                              oReq.send();
                            },
 
