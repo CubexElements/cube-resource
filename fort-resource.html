@@ -13,7 +13,7 @@
             auth:    {type: Boolean, value: false},
             noCache: {type: Boolean, value: false},
             url:     {type: String},
-            headers: {type: Object},
+            headers: {type: Object, value: {}},
             data:    {type: String, readOnly: true, notify: true}
           },
           observers:  ['_updateResource(auto,url,headers)'],
