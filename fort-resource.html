@@ -26,20 +26,38 @@
           _resourceUpdated: function (e)
                             {
                               var key = this._cacheKey();
-                              if(e.detail.key == key)
+                              if(key && e.detail.key == key)
                               {
-                                this._setXhr(e.detail.xhr);
-                                this._setData(e.detail.data);
+                                this._setExportsFromStruct(e.detail);
                               }
                             },
 
-          update:          function ()
-                           {
-                             this._updateResource(true);
-                           },
+          update: function ()
+                  {
+                    this._updateResource(true);
+                  },
+
+          _setExportsFromStruct: function (dataStruct)
+                                 {
+                                   if(!dataStruct)
+                                   {
+                                     dataStruct = {key: null, xhr: null, data: null};
+                                   }
+
+                                   if(this.xhr !== dataStruct.xhr)
+                                   {
+                                     this._setPendingProperty('xhr', dataStruct.xhr);
+                                   }
+                                   if(this.data !== dataStruct.data)
+                                   {
+                                     this._setPendingProperty('data', dataStruct.data);
+                                   }
+                                   this._invalidateProperties();
+                                 },
+
           _updateResource: function (request)
                            {
-                             if(request && this.url && this.headers)
+                             if(request && this.url)
                              {
                                var key = this._cacheKey();
                                if(this.noCache)
@@ -48,7 +66,7 @@
                                }
                                else if(resourceCache[key])
                                {
-                                 this._setData(resourceCache[key]);
+                                 this._setExportsFromStruct(resourceCache[key]);
                                }
                                else
                                {
@@ -58,7 +76,7 @@
                              }
                              else
                              {
-                               this._setData(null);
+                               this._setExportsFromStruct(null);
                              }
                            },
 
@@ -80,10 +98,10 @@
                                        data = this.responseText;
                                        break;
                                    }
-                                   resourceCache[key] = {xhr: xhr, data: data};
+                                   resourceCache[key] = {key: key, xhr: this, data: data};
                                    document.dispatchEvent(
                                      new CustomEvent(
-                                       self._NOTIFY_EVENT_NAME, {detail: {key: key, xhr: xhr, data: data}}
+                                       self._NOTIFY_EVENT_NAME, {detail: resourceCache[key]}
                                      )
                                    );
                                  }
@@ -107,7 +125,11 @@
 
           _cacheKey: function ()
                      {
-                       return JSON.stringify([this.url, this.headers]);
+                       if(this.url)
+                       {
+                         return JSON.stringify([this.url, this.headers]);
+                       }
+                       return null;
                      },
 
           _NOTIFY_EVENT_NAME: 'fortifi-resource-updated'
