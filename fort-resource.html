@@ -1,6 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 
-<dom-module id="fort-resource" attributes="auto auth url data headers no-cache">
+<dom-module id="fort-resource" attributes="auto auth url data headers no-cache xhr">
   <script>
     (function ()
     {
@@ -14,7 +14,8 @@
             noCache: {type: Boolean, value: false},
             url:     {type: String},
             headers: {type: Object, value: {}},
-            data:    {type: String, readOnly: true, notify: true}
+            data:    {type: String, readOnly: true, notify: true},
+            xhr:     {type: String, readOnly: true, notify: true}
           },
           observers:  ['_updateResource(auto,url,headers)'],
           attached:   function ()
@@ -27,6 +28,7 @@
                               var key = this._cacheKey();
                               if(e.detail.key == key)
                               {
+                                this._setXhr(e.detail.xhr);
                                 this._setData(e.detail.data);
                               }
                             },
@@ -78,9 +80,11 @@
                                        data = this.responseText;
                                        break;
                                    }
-                                   resourceCache[key] = data;
+                                   resourceCache[key] = {xhr: xhr, data: data};
                                    document.dispatchEvent(
-                                     new CustomEvent(self._NOTIFY_EVENT_NAME, {detail: {key: key, data: data}})
+                                     new CustomEvent(
+                                       self._NOTIFY_EVENT_NAME, {detail: {key: key, xhr: xhr, data: data}}
+                                     )
                                    );
                                  }
                                }
