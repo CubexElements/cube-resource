@@ -17,7 +17,7 @@
             data:    {type: String, readOnly: true, notify: true},
             xhr:     {type: String, readOnly: true, notify: true}
           },
-          observers:  ['_updateResource(auto,url,headers)'],
+          observers:  ['_updateResource(auto,noCache,url,headers)'],
           attached:   function ()
                       {
                         document.addEventListener(this._NOTIFY_EVENT_NAME, this._resourceUpdated.bind(this));
@@ -32,9 +32,9 @@
                               }
                             },
 
-          update: function ()
+          update: function (noCache)
                   {
-                    this._updateResource(true);
+                    this._updateResource(true, noCache);
                   },
 
           _setExportsFromStruct: function (dataStruct)
@@ -55,12 +55,12 @@
                                    this._invalidateProperties();
                                  },
 
-          _updateResource: function (request)
+          _updateResource: function (request, noCache)
                            {
                              if(request && this.url)
                              {
                                var key = this._cacheKey();
-                               if(this.noCache)
+                               if(noCache)
                                {
                                  this._triggerRequest();
                                }
