@@ -39,11 +39,6 @@
 
           _setExportsFromStruct: function (dataStruct)
                                  {
-                                   if(!dataStruct)
-                                   {
-                                     dataStruct = this._PENDING_STRUCT;
-                                   }
-
                                    if(this.xhr !== dataStruct.xhr)
                                    {
                                      this._setPendingProperty('xhr', dataStruct.xhr);
@@ -60,30 +55,32 @@
                              if(request && this.url)
                              {
                                var key = this._cacheKey();
-                               if(noCache && !resourceCache[key].pending)
-                               {
-                                 this._triggerRequest();
-                               }
-                               else if(resourceCache[key])
+                               if(!noCache && resourceCache[key])
                                {
                                  this._setExportsFromStruct(resourceCache[key]);
                                }
                                else
                                {
-                                 resourceCache[key] = this._PENDING_STRUCT;
                                  this._triggerRequest();
                                }
                              }
                              else
                              {
-                               this._setExportsFromStruct(null);
+                               this._setExportsFromStruct(this._PENDING_STRUCT);
                              }
                            },
 
           _triggerRequest: function ()
                            {
                              var self = this, key = self._cacheKey(), oReq = new XMLHttpRequest();
-                             resourceCache[key].pending = true;
+                             if(!resourceCache[key])
+                             {
+                               resourceCache[key] = this._PENDING_STRUCT;
+                             }
+                             else
+                             {
+                               resourceCache[key].pending = true;
+                             }
                              oReq.addEventListener(
                                "load", function ()
                                {
