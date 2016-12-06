@@ -41,7 +41,7 @@
                                  {
                                    if(!dataStruct)
                                    {
-                                     dataStruct = {key: null, xhr: null, data: null};
+                                     dataStruct = this._PENDING_STRUCT;
                                    }
 
                                    if(this.xhr !== dataStruct.xhr)
@@ -60,7 +60,7 @@
                              if(request && this.url)
                              {
                                var key = this._cacheKey();
-                               if(noCache)
+                               if(noCache && !resourceCache[key].pending)
                                {
                                  this._triggerRequest();
                                }
@@ -70,7 +70,7 @@
                                }
                                else
                                {
-                                 resourceCache[key] = {};
+                                 resourceCache[key] = this._PENDING_STRUCT;
                                  this._triggerRequest();
                                }
                              }
@@ -83,6 +83,7 @@
           _triggerRequest: function ()
                            {
                              var self = this, key = self._cacheKey(), oReq = new XMLHttpRequest();
+                             resourceCache[key].pending = true;
                              oReq.addEventListener(
                                "load", function ()
                                {
@@ -132,7 +133,8 @@
                        return null;
                      },
 
-          _NOTIFY_EVENT_NAME: 'fortifi-resource-updated'
+          _NOTIFY_EVENT_NAME: 'fortifi-resource-updated',
+          _PENDING_STRUCT:    {key: null, xhr: null, data: null, pending: true}
         }
       );
     }());
