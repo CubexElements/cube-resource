@@ -1,6 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 
-<dom-module id="fort-resource" attributes="auto auth url data headers no-cache xhr">
+<dom-module id="fort-resource" attributes="auto auth url data headers ttl xhr">
   <script>
     (function ()
     {
@@ -11,7 +11,10 @@
           properties: {
             auto:    {type: Boolean, value: false},
             auth:    {type: Boolean, value: false},
-            noCache: {type: Boolean, value: false},
+            /**
+             * ttl: time to live (in seconds)
+             */
+            ttl:     {type: Number, value: 0},
             url:     {type: String},
             headers: {type: Object, value: {}},
             data:    {type: String, readOnly: true, notify: true},
@@ -32,9 +35,9 @@
                               }
                             },
 
-          update: function (noCache)
+          update: function (ignoreCache)
                   {
-                    this._updateResource(true, noCache);
+                    this._updateResource(true, ignoreCache);
                   },
 
           _setExportsFromStruct: function (dataStruct)
@@ -50,12 +53,12 @@
                                    this._invalidateProperties();
                                  },
 
-          _updateResource: function (request, noCache)
+          _updateResource: function (request, ignoreCache)
                            {
                              if(request && this.url)
                              {
                                var key = this._cacheKey();
-                               if(!noCache && resourceCache[key])
+                               if((!ignoreCache) && resourceCache[key] && resourceCache[key].expires > Date.now())
                                {
                                  this._setExportsFromStruct(resourceCache[key]);
                                }
@@ -66,7 +69,7 @@
                              }
                              else
                              {
-                               this._setExportsFromStruct(this._PENDING_STRUCT);
+                               this._setExportsFromStruct(this._makeCache(null));
                              }
                            },
 
@@ -75,7 +78,7 @@
                              var self = this, key = self._cacheKey(), oReq = new XMLHttpRequest();
                              if(!resourceCache[key])
                              {
-                               resourceCache[key] = this._PENDING_STRUCT;
+                               resourceCache[key] = this._makeCache(key);
                              }
                              else
                              {
@@ -96,7 +99,7 @@
                                        data = this.responseText;
                                        break;
                                    }
-                                   resourceCache[key] = {key: key, xhr: this, data: data};
+                                   resourceCache[key] = self._makeCache(key, this, data, false);
                                    document.dispatchEvent(
                                      new CustomEvent(
                                        self._NOTIFY_EVENT_NAME, {detail: resourceCache[key]}
@@ -130,8 +133,18 @@
                        return null;
                      },
 
-          _NOTIFY_EVENT_NAME: 'fortifi-resource-updated',
-          _PENDING_STRUCT:    {key: null, xhr: null, data: null, pending: true}
+          _makeCache: function (key, xhr, data, pending)
+                      {
+                        return {
+                          key:     key,
+                          xhr:     xhr,
+                          data:    data,
+                          pending: pending,
+                          expires: (this.ttl * 1000) + Date.now()
+                        };
+                      },
+
+          _NOTIFY_EVENT_NAME: 'fortifi-resource-updated'
         }
       );
     }());
