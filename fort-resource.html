@@ -16,7 +16,7 @@
              */
             ttl:     {type: Number, value: 0},
             url:     {type: String},
-            headers: {type: Object, value: {}},
+            headers: {type: Object, value: function () {return {};}},
             data:    {type: String, readOnly: true, notify: true},
             xhr:     {type: String, readOnly: true, notify: true}
           },
