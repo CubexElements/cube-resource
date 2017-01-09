@@ -11,11 +11,11 @@
 
 <dom-bind>
   <template>
-    <fort-resource url="resource1.json" data="{{data1}}"></fort-resource>
+    <fort-resource auto url="resource1.json" data="{{data1}}"></fort-resource>
     <div>JSON: [[data1.0]]</div>
-    <fort-resource url="resource2.txt" data="{{data2}}"></fort-resource>
+    <fort-resource auto ttl="10" url="resource2.txt" data="{{data2}}"></fort-resource>
     <div>TEXT: [[data2]]</div>
-    <fort-resource url="resource2.txt" data="{{data3}}"></fort-resource>
+    <fort-resource auto ttl="10" url="resource2.txt" data="{{data3}}"></fort-resource>
     <div>TEXT: [[data3]]</div>
   </template>
 </dom-bind>

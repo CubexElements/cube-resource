@@ -2,151 +2,148 @@
 
 <dom-module id="fort-resource" attributes="auto auth url data headers ttl xhr">
   <script>
-    (function ()
-    {
-      var resourceCache = {};
-      Polymer(
-        {
-          is:         'fort-resource',
-          properties: {
-            auto:    {type: Boolean, value: false},
-            auth:    {type: Boolean, value: false},
-            /**
-             * ttl: time to live (in seconds)
-             */
-            ttl:     {type: Number, value: 0},
-            url:     {type: String},
-            headers: {type: Object, value: function () {return {};}},
-            data:    {type: String, readOnly: true, notify: true},
-            xhr:     {type: String, readOnly: true, notify: true}
-          },
-          observers:  ['_updateResource(auto,noCache,url,headers)'],
-          attached:   function ()
-                      {
-                        document.addEventListener(this._NOTIFY_EVENT_NAME, this._resourceUpdated.bind(this));
-                      },
+    Polymer(
+      {
+        is:         'fort-resource',
+        properties: {
+          auto:           {type: Boolean, value: false},
+          auth:           {type: Boolean, value: false},
+          /**
+           * ttl: time to live (in seconds)
+           */
+          ttl:            {type: Number, value: 0},
+          url:            {type: String},
+          headers:        {type: Object, value: function () {return {};}},
+          data:           {type: String, readOnly: true, notify: true},
+          xhr:            {type: String, readOnly: true, notify: true},
+          _resourceCache: {type: Object, value: {}}
+        },
+        observers:  ['_updateResource(auto,noCache,url,headers)'],
+        attached:   function ()
+                    {
+                      document.addEventListener(this._NOTIFY_EVENT_NAME, this._resourceUpdated.bind(this));
+                    },
 
-          _resourceUpdated: function (e)
+        _resourceUpdated: function (e)
+                          {
+                            var key = this._cacheKey();
+                            if(key && e.detail.key == key)
                             {
-                              var key = this._cacheKey();
-                              if(key && e.detail.key == key)
-                              {
-                                this._setExportsFromStruct(e.detail);
-                              }
-                            },
+                              this._setExportsFromStruct(e.detail);
+                            }
+                          },
 
-          update: function (ignoreCache)
-                  {
-                    this._updateResource(true, ignoreCache);
-                  },
+        update: function (ignoreCache)
+                {
+                  this._updateResource(true, ignoreCache);
+                },
 
-          _setExportsFromStruct: function (dataStruct)
+        _setExportsFromStruct: function (dataStruct)
+                               {
+                                 if(this.xhr !== dataStruct.xhr)
                                  {
-                                   if(this.xhr !== dataStruct.xhr)
-                                   {
-                                     this._setPendingProperty('xhr', dataStruct.xhr);
-                                   }
-                                   if(this.data !== dataStruct.data)
-                                   {
-                                     this._setPendingProperty('data', dataStruct.data);
-                                   }
-                                   this._invalidateProperties();
-                                 },
+                                   this._setPendingProperty('xhr', dataStruct.xhr);
+                                 }
+                                 if(this.data !== dataStruct.data)
+                                 {
+                                   this._setPendingProperty('data', dataStruct.data);
+                                 }
+                                 this._invalidateProperties();
+                               },
 
-          _updateResource: function (request, ignoreCache)
+        _updateResource: function (request, ignoreCache)
+                         {
+                           if(request && this.url)
                            {
-                             if(request && this.url)
+                             var key = this._cacheKey();
+                             if((!ignoreCache) && this._resourceCache[key] && this._resourceCache[key].expires > Date.now())
                              {
-                               var key = this._cacheKey();
-                               if((!ignoreCache) && resourceCache[key] && resourceCache[key].expires > Date.now())
-                               {
-                                 this._setExportsFromStruct(resourceCache[key]);
-                               }
-                               else
-                               {
-                                 this._triggerRequest();
-                               }
+                               this._setExportsFromStruct(this._resourceCache[key]);
                              }
                              else
                              {
-                               this._setExportsFromStruct(this._makeCache(null));
+                               this._triggerRequest();
                              }
-                           },
-
-          _triggerRequest: function ()
+                           }
+                           else
                            {
-                             var self = this, key = self._cacheKey(), oReq = new XMLHttpRequest();
-                             if(!resourceCache[key])
-                             {
-                               resourceCache[key] = this._makeCache(key);
-                             }
-                             else
-                             {
-                               resourceCache[key].pending = true;
-                             }
-                             oReq.addEventListener(
-                               "load", function ()
-                               {
-                                 if(this.status == '200')
-                                 {
-                                   var data = null;
-                                   switch(this.getResponseHeader('content-type'))
-                                   {
-                                     case 'application/json':
-                                       data = JSON.parse(this.responseText);
-                                       break;
-                                     default:
-                                       data = this.responseText;
-                                       break;
-                                   }
-                                   resourceCache[key] = self._makeCache(key, this, data, false);
-                                   document.dispatchEvent(
-                                     new CustomEvent(
-                                       self._NOTIFY_EVENT_NAME, {detail: resourceCache[key]}
-                                     )
-                                   );
-                                 }
-                               }
-                             );
-                             oReq.open('GET', this.url);
-                             if(this.headers)
-                             {
-                               var keys = Object.keys(this.headers);
-                               for(var idx in keys)
-                               {
-                                 if(keys.hasOwnProperty(idx))
-                                 {
-                                   oReq.setRequestHeader(keys[idx], this.headers[keys[idx]]);
-                                 }
-                               }
-                             }
-                             oReq.withCredentials = Boolean(this.auth);
-                             oReq.send();
-                           },
+                             this._setExportsFromStruct(this._makeCache(null));
+                           }
+                         },
 
-          _cacheKey: function ()
+        _triggerRequest: function ()
+                         {
+                           var self = this, key = self._cacheKey(), oReq = new XMLHttpRequest();
+                           if(!this._resourceCache[key])
+                           {
+                             this._resourceCache[key] = this._makeCache(key);
+                           }
+                           else
+                           {
+                             this._resourceCache[key].pending = true;
+                           }
+                           oReq.addEventListener(
+                             "load", function ()
+                             {
+                               if(this.status == '200')
+                               {
+                                 var data = null;
+                                 switch(this.getResponseHeader('content-type'))
+                                 {
+                                   case 'application/json':
+                                     data = JSON.parse(this.responseText);
+                                     break;
+                                   default:
+                                     data = this.responseText;
+                                     break;
+                                 }
+                                 self._resourceCache[key] = self._makeCache(key, this, data, false);
+                                 document.dispatchEvent(
+                                   new CustomEvent(
+                                     self._NOTIFY_EVENT_NAME, {detail: self._resourceCache[key]}
+                                   )
+                                 );
+                               }
+                             }
+                           );
+                           oReq.open('GET', this.url);
+                           if(this.headers)
+                           {
+                             var keys = Object.keys(this.headers);
+                             for(var idx in keys)
+                             {
+                               if(keys.hasOwnProperty(idx))
+                               {
+                                 oReq.setRequestHeader(keys[idx], this.headers[keys[idx]]);
+                               }
+                             }
+                           }
+                           oReq.withCredentials = Boolean(this.auth);
+                           oReq.send();
+                         },
+
+        _cacheKey: function ()
+                   {
+                     if(this.url)
                      {
-                       if(this.url)
-                       {
-                         return JSON.stringify([this.url, this.headers]);
-                       }
-                       return null;
-                     },
+                       return JSON.stringify([this.url, this.headers]);
+                     }
+                     return null;
+                   },
 
-          _makeCache: function (key, xhr, data, pending)
-                      {
-                        return {
-                          key:     key,
-                          xhr:     xhr,
-                          data:    data,
-                          pending: pending,
-                          expires: (this.ttl * 1000) + Date.now()
-                        };
-                      },
+        _makeCache: function (key, xhr, data, pending)
+                    {
+                      return {
+                        key:     key,
+                        xhr:     xhr,
+                        data:    data,
+                        pending: pending,
+                        expires: (this.ttl * 1000) + Date.now()
+                      };
+                    },
 
-          _NOTIFY_EVENT_NAME: 'fortifi-resource-updated'
-        }
-      );
-    }());
+        _NOTIFY_EVENT_NAME: 'fortifi-resource-updated'
+      }
+    );
   </script>
 </dom-module>
