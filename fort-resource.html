@@ -16,6 +16,9 @@
           headers:        {type: Object, value: function () {return {};}},
           data:           {type: String, readOnly: true, notify: true},
           xhr:            {type: String, readOnly: true, notify: true},
+          /**
+           * resource cache, shared object between instances (value not wrapped with function)
+           */
           _resourceCache: {type: Object, value: {}}
         },
         observers:  ['_updateResource(auto,noCache,url,headers)'],
