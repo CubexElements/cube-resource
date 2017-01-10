@@ -21,7 +21,7 @@
            */
           _resourceCache: {type: Object, value: {}}
         },
-        observers:  ['_debounceUpdateResource(auto,noCache,url,headers)'],
+        observers:  ['_updateResource(auto,noCache,url,headers)'],
         attached:   function ()
                     {
                       document.addEventListener(this._NOTIFY_EVENT_NAME, this._resourceUpdated.bind(this));
@@ -38,7 +38,7 @@
 
         update: function (ignoreCache)
                 {
-                  this._debounceUpdateResource(true, ignoreCache);
+                  this._updateResource(true, ignoreCache);
                 },
 
         _setExportsFromStruct: function (dataStruct)
@@ -54,14 +54,6 @@
                                  this._invalidateProperties();
                                },
 
-        _debounceUpdateResource: function (request, ignoreCache)
-                                 {
-                                   this.debounce(
-                                     '_updateResource',
-                                     function () {this._updateResource(request, ignoreCache)}
-                                   );
-                                 },
-
         _updateResource: function (request, ignoreCache)
                          {
                            if(request && this.url)
@@ -73,7 +65,7 @@
                              }
                              else
                              {
-                               this._triggerRequest();
+                               this._debounceTriggerRequest();
                              }
                            }
                            else
@@ -81,6 +73,11 @@
                              this._setExportsFromStruct(this._makeCache(null));
                            }
                          },
+
+        _debounceTriggerRequest: function ()
+                                 {
+                                   this.debounce('_triggerRequest', this._triggerRequest);
+                                 },
 
         _triggerRequest: function ()
                          {
