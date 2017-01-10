@@ -21,7 +21,7 @@
            */
           _resourceCache: {type: Object, value: {}}
         },
-        observers:  ['_updateResource(auto,noCache,url,headers)'],
+        observers:  ['_debounceUpdateResource(auto,noCache,url,headers)'],
         attached:   function ()
                     {
                       document.addEventListener(this._NOTIFY_EVENT_NAME, this._resourceUpdated.bind(this));
@@ -53,6 +53,14 @@
                                  }
                                  this._invalidateProperties();
                                },
+
+        _debounceUpdateResource: function (request, ignoreCache)
+                                 {
+                                   this.debounce(
+                                     '_updateResource',
+                                     function () {this._updateResource(request, ignoreCache)}
+                                   );
+                                 },
 
         _updateResource: function (request, ignoreCache)
                          {
