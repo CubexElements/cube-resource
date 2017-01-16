@@ -21,7 +21,7 @@
            */
           _resourceCache: {type: Object, value: {}}
         },
-        observers:  ['_updateResource(auto,noCache,url,headers)'],
+        observers:  ['_updateResource(auto,ttl,url,headers)'],
         attached:   function ()
                     {
                       document.addEventListener(this._NOTIFY_EVENT_NAME, this._resourceUpdated.bind(this));
@@ -38,7 +38,7 @@
 
         update: function (ignoreCache)
                 {
-                  this._updateResource(true, ignoreCache);
+                  this._updateResource(true, ignoreCache ? 0 : this.ttl);
                 },
 
         _setExportsFromStruct: function (dataStruct)
@@ -54,12 +54,12 @@
                                  this._invalidateProperties();
                                },
 
-        _updateResource: function (request, ignoreCache)
+        _updateResource: function (request, ttl)
                          {
                            if(request && this.url)
                            {
                              var key = this._cacheKey();
-                             if((!ignoreCache) && this._resourceCache[key] && this._resourceCache[key].expires > Date.now())
+                             if(ttl && this._resourceCache[key] && this._resourceCache[key].expires > Date.now())
                              {
                                this._setExportsFromStruct(this._resourceCache[key]);
                              }
