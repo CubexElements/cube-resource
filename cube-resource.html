@@ -1,10 +1,10 @@
 <link rel="import" href="../polymer/polymer.html">
 
-<dom-module id="fort-resource" attributes="auto auth url data headers ttl xhr">
+<dom-module id="cube-resource" attributes="auto auth url data headers ttl xhr">
   <script>
     Polymer(
       {
-        is:         'fort-resource',
+        is:         'cube-resource',
         properties: {
           auto:           {type: Boolean, value: false},
           auth:           {type: Boolean, value: false},
@@ -150,7 +150,7 @@
                       };
                     },
 
-        _NOTIFY_EVENT_NAME: 'fortifi-resource-updated'
+        _NOTIFY_EVENT_NAME: 'cubex-resource-updated'
       }
     );
   </script>

@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <title>fort-resource Demo</title>
+  <title>cube-resource Demo</title>
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../fort-resource.html">
+  <link rel="import" href="../cube-resource.html">
 </head>
 <body unresolved>
 
 <dom-bind>
   <template>
-    <fort-resource auto url="resource1.json" data="{{data1}}"></fort-resource>
+    <cube-resource auto url="resource1.json" data="{{data1}}"></cube-resource>
     <div>JSON: [[data1.0]]</div>
-    <fort-resource auto ttl="10" url="resource2.txt" data="{{data2}}"></fort-resource>
+    <cube-resource auto ttl="10" url="resource2.txt" data="{{data2}}"></cube-resource>
     <div>TEXT: [[data2]]</div>
-    <fort-resource auto ttl="10" url="resource2.txt" data="{{data3}}"></fort-resource>
+    <cube-resource auto ttl="10" url="resource2.txt" data="{{data3}}"></cube-resource>
     <div>TEXT: [[data3]]</div>
   </template>
 </dom-bind>
