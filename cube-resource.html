@@ -31,7 +31,7 @@
         _resourceUpdated: function (e)
                           {
                             var key = this._cacheKey();
-                            if(key && e.detail && e.detail.key == key)
+                            if(key && e.detail && e.detail.key === key)
                             {
                               this._setExportsFromStruct(e.detail);
                             }
@@ -113,7 +113,7 @@
                            oReq.addEventListener(
                              "readystatechange", function ()
                              {
-                               if(this.readyState == XMLHttpRequest.DONE)
+                               if(this.readyState === XMLHttpRequest.DONE)
                                {
                                  var data = null;
                                  switch(this.getResponseHeader('content-type'))
