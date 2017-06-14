@@ -1,6 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 
-<dom-module id="cube-resource" attributes="auto auth url data headers ttl xhr status requested-by">
+<dom-module id="cube-resource" attributes="auto auth url data headers ttl xhr status no-request-by">
   <script>
     Polymer(
       {
@@ -8,7 +8,7 @@
         properties: {
           auto:           {type: Boolean, value: false},
           auth:           {type: Boolean, value: false},
-          requestedBy:    {type: String, value: 'cube-resource'},
+          noRequestBy:    {type: Boolean, value: false},
           /**
            * ttl: time to live (in seconds)
            */
@@ -32,9 +32,9 @@
 
         _refreshHeaders: function (headers)
                          {
-                           if(this.requestedBy)
+                           if(!this.noRequestBy)
                            {
-                             headers['X-Requested-By'] = this.requestedBy;
+                             headers['X-Requested-By'] = 'cube-resource';
                            }
                            return headers;
                          },
