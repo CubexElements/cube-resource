@@ -191,7 +191,7 @@
       {
         if(this.url)
         {
-          return JSON.stringify([this.url, this._headers]);
+          return JSON.stringify([this.method, this.url, this.data, this._headers]);
         }
         return undefined;
       }
