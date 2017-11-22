@@ -1,24 +1,44 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <title>cube-resource Demo</title>
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+  <title>cube-resource demo</title>
+
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
   <link rel="import" href="../cube-resource.html">
+
+  <custom-style>
+    <style is="custom-style" include="demo-pages-shared-styles"></style>
+  </custom-style>
 </head>
-<body unresolved>
-
-<dom-bind>
-  <template>
-    <cube-resource auto url="resource1.json" data="{{data1}}" status="{{status1}}"></cube-resource>
-    <div>JSON: [[status1]] [[data1.0]] - [[data1.1]]</div>
-    <cube-resource auto ttl="10" url="resource2.txt" data="{{data2}}" status="{{status2}}"></cube-resource>
-    <div>TEXT: [[status2]] [[data2]]</div>
-    <cube-resource auto ttl="10" url="resource2.txt" data="{{data3}}" status="{{status3}}"></cube-resource>
-    <div>TEXT: [[status3]] [[data3]]</div>
-  </template>
-</dom-bind>
-
+<body>
+<div class="vertical-section-container centered">
+  <h3>Basic cube-resource demo</h3>
+  <demo-snippet>
+    <template>
+      <dom-bind>
+        <template>
+          <cube-resource auto url="resource1.json" response="{{response1}}" ttl="{{ttl}}"
+                         status="{{status1}}"></cube-resource>
+          <div>JSON: [[status1]] [[response1.0]] - [[response1.1]]</div>
+          <cube-resource auto ttl="10" url="resource2.txt" response="{{response2}}"
+                         status="{{status2}}"></cube-resource>
+          <div>TEXT: [[status2]] [[response2]]</div>
+          <cube-resource auto ttl="10" url="resource2.txt" response="{{response3}}"
+                         status="{{status3}}"></cube-resource>
+          <div>TEXT: [[status3]] [[response3]]</div>
+          <cube-resource auto ttl="10" url="resource3.json" response="{{response4}}" data='{"test":"val"}' method="POST"
+                         status="{{status4}}"></cube-resource>
+          <div>TEXT: [[status4]] [[response4]]</div>
+        </template>
+      </dom-bind>
+    </template>
+  </demo-snippet>
+</div>
 </body>
 </html>

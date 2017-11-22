@@ -1,86 +1,96 @@
 <link rel="import" href="../polymer/polymer.html">
 
-<dom-module id="cube-resource" attributes="auto auth url data headers ttl xhr status no-request-by">
+<dom-module id="cube-resource" attributes="auto auth url response data method headers ttl xhr status no-request-by">
   <script>
-    Polymer(
+    /**
+     * @customElement
+     * @polymer
+     */
+    class CubeResource extends Polymer.Element
     {
-      is: 'cube-resource',
-      properties:
-      {
-        auto: { type: Boolean, value: false },
-        auth: { type: Boolean, value: false },
-        noRequestBy: { type: Boolean, value: false },
-        /**
-         * ttl: time to live (in seconds)
-         */
-        ttl: { type: Number, value: 2 },
-        url: { type: String },
-        headers: { type: Object, value: function() { return {}; } },
-        data: { type: String, readOnly: true, notify: true },
-        xhr: { type: String, readOnly: true, notify: true },
-        status: { type: Number, value: -1, notify: true },
-        /**
-         * resource cache, shared object between instances (value not wrapped with function)
-         */
-        _resourceCache: { type: Object, value: {} },
-        _headers: { type: Object, computed: '_refreshHeaders(headers)' }
-      },
-      observers: ['_updateResource(auto,ttl,url,headers)'],
-      attached: function()
-      {
-        document.addEventListener(this._NOTIFY_EVENT_NAME, this._resourceUpdated
-          .bind(this));
-      },
+      static get is() { return 'cube-resource'; }
 
-      _refreshHeaders: function(headers)
+      static get properties()
+      {
+        return {
+          auto: {type: Boolean, value: false},
+          auth: {type: Boolean, value: false},
+          noRequestBy: {type: Boolean, value: false},
+          /**
+           * ttl: time to live (in seconds)
+           */
+          ttl: {type: Number, value: 2},
+          url: {type: String},
+          headers: {type: Object, value: function () { return {}; }},
+          method: {type: String, value: 'GET'},
+          data: {type: Object, value: function () { return {}; }},
+          response: {type: String, readOnly: true, notify: true},
+          xhr: {type: String, readOnly: true, notify: true},
+          status: {type: Number, value: -1, notify: true},
+          /**
+           * resource cache, shared object between instances (value not wrapped with function)
+           */
+          _resourceCache: {type: Object, value: {}},
+          _headers: {type: Object, computed: '_refreshHeaders(headers)'}
+        };
+      }
+
+      static get observers()
+      {
+        return ['_updateResource(auto,ttl,url,headers)'];
+      }
+
+      connectedCallback()
+      {
+        super.connectedCallback();
+        document.addEventListener(CubeResource._NOTIFY_EVENT_NAME, this._resourceUpdated.bind(this));
+
+      }
+
+      _refreshHeaders(headers)
       {
         if(!this.noRequestBy)
         {
           headers['X-Requested-By'] = 'cube-resource';
         }
         return headers;
-      },
+      }
 
-      _resourceUpdated: function(e)
+      _resourceUpdated(e)
       {
-        var key = this._cacheKey();
+        let key = this._cacheKey();
         if(key && e.detail && e.detail.key === key)
         {
           this._setExportsFromStruct(e.detail);
         }
-      },
+      }
 
-      update: function(ignoreCache)
+      update(ignoreCache)
       {
         this._updateResource(true, ignoreCache ? 0 : this.ttl);
-      },
+      }
 
-      _setExportsFromStruct: function(dataStruct)
+      _setExportsFromStruct(dataStruct)
       {
-        this._setPendingProperty(
-          'status',
-          dataStruct.status !== undefined ? dataStruct.status : -1,
-          true
-        );
+        this._setPendingProperty('status', dataStruct.status !== undefined ? dataStruct.status : -1, true);
 
         if(this.xhr !== dataStruct.xhr)
         {
           this._setPendingProperty('xhr', dataStruct.xhr, true);
         }
-
-        if(this.data !== dataStruct.data)
+        if(this.response !== dataStruct.response)
         {
-          this._setPendingProperty('data', dataStruct.data, true);
+          this._setPendingProperty('response', dataStruct.response, true);
         }
 
         this._invalidateProperties();
-      },
+      }
 
-      _updateResource: function(request, ttl)
+      _updateResource(request, ttl)
       {
         if(request && this.url)
         {
-          var key = this._cacheKey();
+          let key = this._cacheKey();
           if(ttl && this._resourceCache[key] && this._resourceCache[key].expires >
             Date.now())
           {
@@ -95,30 +105,24 @@
         {
           this._setExportsFromStruct(this._makeCache());
         }
-      },
+      }
 
-      _dispatchCached: function()
+      _dispatchCached()
       {
+        //noinspection JSCheckFunctionSignatures
         document.dispatchEvent(
-          new CustomEvent(
-            this._NOTIFY_EVENT_NAME,
-            {
-              detail: this._resourceCache[this
-                ._cacheKey()]
-            }
-          )
+          new CustomEvent(CubeResource._NOTIFY_EVENT_NAME, {detail: this._resourceCache[this._cacheKey()]})
         );
-      },
+      }
 
-      _triggerRequest: function()
+      _triggerRequest()
       {
-        var self = this,
-          key = self._cacheKey(),
-          oReq = new XMLHttpRequest();
+        let self = this,
+            key  = self._cacheKey(),
+            oReq = new XMLHttpRequest();
         if(!this._resourceCache[key])
         {
-          this._resourceCache[key] =
-            this._makeCache(key, undefined, undefined, true);
+          this._resourceCache[key] = this._makeCache(key, undefined, undefined, true);
         }
         else if(this._resourceCache[key].pending)
         {
@@ -133,33 +137,33 @@
         this._dispatchCached();
 
         oReq.addEventListener(
-          "readystatechange",
-          function()
+          'readystatechange',
+          function ()
           {
             if(this.readyState === XMLHttpRequest.DONE)
             {
-              var data = undefined;
+              let response = undefined;
               switch(this.getResponseHeader('content-type'))
               {
                 case 'application/json':
-                  data = JSON.parse(this.responseText);
+                  response = JSON.parse(this.responseText);
                   break;
                 default:
-                  data = this.responseText;
+                  response = this.responseText;
                   break;
               }
               self._resourceCache[key] =
-                self._makeCache(key, this, data, false);
+                self._makeCache(key, this, response, false);
               self._resourceCache[key].status = this.status;
               self._dispatchCached();
             }
           }
         );
-        oReq.open('GET', this.url);
+        oReq.open(this.method, this.url);
         if(this._headers)
         {
-          var keys = Object.keys(this._headers);
-          for(var idx in keys)
+          let keys = Object.keys(this._headers);
+          for(let idx in keys)
           {
             if(keys.hasOwnProperty(idx))
             {
@@ -168,30 +172,44 @@
           }
         }
         oReq.withCredentials = Boolean(this.auth);
-        oReq.send();
-      },
+        let data = new FormData();
+        if(this.data)
+        {
+          let keys = Object.keys(this.data);
+          for(let k in keys)
+          {
+            if(this.data.hasOwnProperty(keys[k]))
+            {
+              data.append(keys[k], this.data[keys[k]]);
+            }
+          }
+        }
+        oReq.send(data);
+      }
 
-      _cacheKey: function()
+      _cacheKey()
       {
         if(this.url)
         {
           return JSON.stringify([this.url, this._headers]);
         }
         return undefined;
-      },
+      }
 
-      _makeCache: function(key, xhr, data, pending)
+      _makeCache(key, xhr, response, pending)
       {
         return {
           key: key ? key : undefined,
           xhr: xhr ? xhr : undefined,
-          data: data ? data : undefined,
+          response: response ? response : undefined,
           pending: pending ? pending : undefined,
           expires: (this.ttl * 1000) + Date.now()
         };
-      },
+      }
 
-      _NOTIFY_EVENT_NAME: 'cubex-resource-updated'
-    });
+      static get _NOTIFY_EVENT_NAME() {return 'cubex-resource-updated';};
+    }
+
+    window.customElements.define(CubeResource.is, CubeResource);
   </script>
 </dom-module>

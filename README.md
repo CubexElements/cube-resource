@@ -1,33 +1,21 @@
-_[Demo and API docs](https://elements.cubex.io/elements/cube-resource)_
-
-##&lt;cube-resource&gt;
-
-An element providing a starting point for your own reusable Polymer elements.
+# \<cube-resource\>
 
 
-## Dependencies
 
-Element dependencies are managed via [Bower](http://bower.io/). You can
-install that via:
+## Install the Polymer-CLI
 
-    npm install -g bower
+First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polymer-cli) installed. Then run `polymer serve` to serve your element locally.
 
-Then, go ahead and download the element's dependencies:
+## Viewing Your Element
 
-    bower install
+```
+$ polymer serve
+```
 
+## Running Tests
 
-## Playing With Your Element
+```
+$ polymer test
+```
 
-If you wish to work on your element in isolation, we recommend that you use
-[Polyserve](https://github.com/PolymerLabs/polyserve) to keep your element's
-bower dependencies in line. You can install it via:
-
-    npm install -g polyserve
-
-And you can run it via:
-
-    polyserve
-
-Once running, you can preview your element at
-`http://localhost:8080/components/cube-resource/`, where `cube-resource` is the name of the directory containing it.
+Your application is already set up to be tested via [web-component-tester](https://github.com/Polymer/web-component-tester). Run `polymer test` to run your application's test suite locally.
