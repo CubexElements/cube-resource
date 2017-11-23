@@ -31,13 +31,15 @@
            * resource cache, shared object between instances (value not wrapped with function)
            */
           _resourceCache: {type: Object, value: {}},
-          _headers: {type: Object, computed: '_refreshHeaders(headers)'}
+          _headers: {type: Object, computed: '_refreshHeaders(headers)'},
+
+          _xhr: {type: Object, value: null}
         };
       }
 
       static get observers()
       {
-        return ['_updateResource(auto,ttl,url,headers)'];
+        return ['_updateResource(auto,ttl,url,method,data,headers)'];
       }
 
       connectedCallback()
@@ -118,8 +120,7 @@
       _triggerRequest()
       {
         let self = this,
-            key  = self._cacheKey(),
-            oReq = new XMLHttpRequest();
+            key  = self._cacheKey();
         if(!this._resourceCache[key])
         {
           this._resourceCache[key] = this._makeCache(key, undefined, undefined, true);
@@ -134,9 +135,13 @@
           this._resourceCache[key].status = -1;
           this._resourceCache[key].pending = true;
         }
-        this._dispatchCached();
 
-        oReq.addEventListener(
+        if(this._xhr)
+        {
+          this._xhr.abort();
+        }
+        this._xhr = new XMLHttpRequest();
+        this._xhr.addEventListener(
           'readystatechange',
           function ()
           {
@@ -152,14 +157,16 @@
                   response = this.responseText;
                   break;
               }
-              self._resourceCache[key] =
-                self._makeCache(key, this, response, false);
+              self._xhr = null;
+              self._resourceCache[key] = self._makeCache(key, this, response, false);
               self._resourceCache[key].status = this.status;
               self._dispatchCached();
             }
           }
         );
-        oReq.open(this.method, this.url);
+
+        this._xhr.open(this.method, this.url);
+
         if(this._headers)
         {
           let keys = Object.keys(this._headers);
@@ -167,11 +174,12 @@
           {
             if(keys.hasOwnProperty(idx))
             {
-              oReq.setRequestHeader(keys[idx], this._headers[keys[idx]]);
+              this._xhr.setRequestHeader(keys[idx], this._headers[keys[idx]]);
             }
           }
         }
-        oReq.withCredentials = Boolean(this.auth);
+        this._xhr.withCredentials = Boolean(this.auth);
+
         let data = new FormData();
         if(this.data)
         {
@@ -184,7 +192,8 @@
             }
           }
         }
-        oReq.send(data);
+
+        this._xhr.send(data);
       }
 
       _cacheKey()
