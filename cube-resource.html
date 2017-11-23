@@ -33,7 +33,8 @@
           _resourceCache: {type: Object, value: {}},
           _headers: {type: Object, computed: '_refreshHeaders(headers)'},
 
-          _xhr: {type: Object, value: null}
+          _xhr: {type: Object, value: null},
+          _debounceTrigger: {type: Object, value: null}
         };
       }
 
@@ -100,7 +101,11 @@
           }
           else
           {
-            this._triggerRequest();
+            this._debounceTrigger = Polymer.Debouncer.debounce(
+              this._debounceTrigger,
+              Polymer.Async.microTask,
+              this._triggerRequest.bind(this)
+            );
           }
         }
         else
