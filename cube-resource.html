@@ -1,6 +1,7 @@
 <link rel="import" href="../polymer/polymer.html">
 
-<dom-module id="cube-resource" attributes="auto auth url response data method headers ttl xhr status no-request-by">
+<dom-module id="cube-resource"
+            attributes="auto auth url response data method headers ttl xhr status no-request-by pending">
   <script>
     /**
      * @customElement
@@ -27,6 +28,7 @@
           response: {type: String, readOnly: true, notify: true},
           xhr: {type: String, readOnly: true, notify: true},
           status: {type: Number, value: -1, notify: true},
+          pending: {type: Boolean, value: true, notify: true},
           /**
            * resource cache, shared object between instances (value not wrapped with function)
            */
@@ -40,7 +42,7 @@
 
       static get observers()
       {
-        return ['_updateResource(auto,ttl,url,method,data,headers)'];
+        return ['_updateResource(auto,ttl,url,method,data,data.*,headers)'];
       }
 
       connectedCallback()
@@ -76,6 +78,7 @@
       _setExportsFromStruct(dataStruct)
       {
         this._setPendingProperty('status', dataStruct.status !== undefined ? dataStruct.status : -1, true);
+        this._setPendingProperty('pending', !!dataStruct.pending, true);
 
         if(this.xhr !== dataStruct.xhr)
         {
