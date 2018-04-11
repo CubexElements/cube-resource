@@ -6,10 +6,10 @@
 
   <title>cube-resource test</title>
 
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../../web-component-tester/browser.js"></script>
 
-  <link rel="import" href="../cube-resource.html">
+  <script type="module" src="../cube-resource.js"></script>
 </head>
 <body>
 
@@ -19,19 +19,20 @@
   </template>
 </test-fixture>
 
-<script>
-  suite('cube-resource', () =>
+<script type="module">
+import '../cube-resource.js';
+suite('cube-resource', () =>
+{
+
+  test('instantiating the element with default properties works', () =>
   {
-
-    test('instantiating the element with default properties works', () =>
-    {
-      const element = fixture('BasicTestFixture');
-      element.url = 'resources/resource1.json';
-      element.auto = true;
-      assert.equal(element.status, 200);
-    });
-
+    const element = fixture('BasicTestFixture');
+    element.url = 'resources/resource1.json';
+    element.auto = true;
+    assert.equal(element.status, 200);
   });
+
+});
 </script>
 
 </body>
